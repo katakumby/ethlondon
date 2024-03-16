@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CreatePost } from "~/app/_components/create-post";
+import { WordCoin } from "~/app/_components/word-coin";
 import { api } from "~/trpc/server";
 
 export default async function Home() {
@@ -59,6 +60,7 @@ async function CrudShowcase() {
         <p>You have no posts yet.</p>
       )}
 
+      <WordCoin />
       <CreatePost />
     </div>
   );
