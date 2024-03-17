@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-//import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import {ERC721URIStorage} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
 import "./IERC4907.sol";
@@ -21,7 +20,6 @@ contract ERC4907 is ERC721, ERC721URIStorage, IERC4907, Ownable {
 
     mapping(uint256 => UserInfo) internal _users;
 
-    //    constructor() ERC721("GameItem", "ITM") {}
 
     constructor(string memory name_, string memory symbol_, address initialOwner) ERC721(name_, symbol_) Ownable(initialOwner){}
     /**
@@ -108,20 +106,6 @@ contract ERC4907 is ERC721, ERC721URIStorage, IERC4907, Ownable {
         }
         return previousOwner;
     }
-
-//    function _beforeTokenTransfer(
-//        address from,
-//        address to,
-//        uint256 tokenId
-//    ) internal virtual override {
-//        super._beforeTokenTransfer(from, to, tokenId);
-//
-//        if (from != to && _users[tokenId].user != address(0)) {
-//            delete _users[tokenId];
-//            emit UpdateUser(tokenId, address(0), 0);
-//        }
-//    }
-
 
     function tokenURI(uint256 tokenId)
     public
