@@ -14,32 +14,30 @@ describe("Lock2", function () {
 
 
         // Contracts are deployed using the first signer/account by default
-        const [owner, otherAccount] = await hre.ethers.getSigners();
+        const [owner, otherAccount1, otherAccount2] = await hre.ethers.getSigners();
 
         const ERC4907 = await hre.ethers.getContractFactory("ERC4907");
         const erc4907 = await ERC4907.deploy("BMW Lottery","BMWL", owner);
 
-        return { erc4907, owner, otherAccount };
+        return { erc4907, owner, otherAccount1,otherAccount2};
     }
 
     describe("Deployment", function () {
-        it("Should mint new ", async function () {
-            const { erc4907, owner,otherAccount } = await loadFixture(deployOneYearLockFixture);
-            const mint1 = await erc4907.mint(otherAccount,"ipfs",new Date().valueOf());
-            const mint2 = await erc4907.mint(otherAccount,"ipfs",new Date().valueOf());
+        it("Should mint new NFT's ", async function () {
+            const { erc4907, owner,otherAccount1,otherAccount2 } = await loadFixture(deployOneYearLockFixture);
+            const nft1 = await erc4907.mint(otherAccount1,"ipfs1",new Date().valueOf()+1000);
+            const nft2 = await erc4907.mint(otherAccount2,"ipfs2",new Date().valueOf()+1000);
+            const nft3 = await erc4907.mint(owner,"ipfs3",new Date().valueOf()+1000);
 
-            // const xyz2 = await erc4907.ownerOf(1)
-            const xyz2 = await erc4907.balanceOf(owner);
-            const minnn = await erc4907.ownerOf(1);
-            const userof = await erc4907.userOf(1);
-            // console.debug("XYZ",minnn.toString())
-            console.debug("owner",owner.address.toString())
-            console.debug("otherAccountAddr",otherAccount.address.toString())
-            console.debug("userof",userof.toString())
-            console.debug("minnn",minnn.toString())
-            console.debug("xyz2",xyz2.toString())
-            // console.debug("XYZ",xyz)
-            // expect(await lock.unlockTime()).to.equal(unlockTime);
+            expect(await erc4907.userOf(0)).to.equal(otherAccount1.address.toString())
+            expect(await erc4907.userOf(1)).to.equal(otherAccount2.address.toString())
+            expect(await erc4907.userOf(2)).to.equal('0x0000000000000000000000000000000000000000')
+
+            expect(await erc4907.ownerOf(0)).to.equal(owner.address.toString())
+            expect(await erc4907.ownerOf(1)).to.equal(owner.address.toString())
+            expect(await erc4907.ownerOf(2)).to.equal(owner.address.toString())
+
+
         });
 
     });

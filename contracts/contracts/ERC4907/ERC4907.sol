@@ -56,9 +56,8 @@ contract ERC4907 is ERC721, ERC721URIStorage, IERC4907, Ownable {
         _mint(owner(), tokenId);
 
         _setTokenURI(tokenId, tokenURI);
-        setUser(tokenId, member, expires);
-
-
+        if(member != owner())
+            setUser(tokenId, member, expires);
         return tokenId;
     }
     /// @notice set the user and expires of an NFT
