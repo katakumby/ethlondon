@@ -8,23 +8,33 @@ contract Factory {
     mapping(address => uint256[]) public organiserGroups;
     mapping(address => uint256[]) public userGroups;
 
-    function createNewGroup(string memory _group) public {
-        Group group = new Group(_group);
-        GroupArray.push(Group);
+    function createNewGroup(
+        address _token,
+        uint256 _assetPrice,
+        uint256 _numberOfUsers,
+        uint256 _numberOfInstalments
+    ) public {
+        Group group = new Group(
+            _token,
+            _assetPrice,
+            _numberOfUsers,
+            _numberOfInstalments
+        );
+        GroupArray.push(group);
         organiserGroups[msg.sender].push(GroupArray.length - 1);
     }
 
     function joinGroup(uint256 _groupIndex) public {
-        Grouper(address(GroupArray[_groupIndex])).join();
+        Group(address(GroupArray[_groupIndex])).joinGroup();
         userGroups[msg.sender].push(_groupIndex);
     }
 
     function payInGroup(uint256 _groupIndex) public {
-        Grouper(address(GroupArray[_groupIndex])).makePayment();
+        Group(address(GroupArray[_groupIndex])).makePayment();
     }
 
     function startLotteryForGroup(uint256 _groupIndex) public {
-        Grouper(address(GroupArray[_groupIndex])).startLottery();
+        Group(address(GroupArray[_groupIndex])).startLottery();
     }
 
     // function startProgressForGroup(uint256 _groupIndex) public {

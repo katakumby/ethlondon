@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract Group is IERC20 {
+contract Group {
     struct User {
         bool exists;
         uint256 remainingAmount;
@@ -59,15 +59,16 @@ contract Group is IERC20 {
         _;
     }
 
-    function joinGroup(address _user) public {
+    function joinGroup() public {
         require(currentUsers < numberOfUsers, "User capacity reached");
 
         // verify worldcoin id
+        address _user = msg.sender;
         //take payment
         require(userMap[_user].exists, "User already in the group");
         bool sent = token.transferFrom(
             msg.sender,
-            this.address,
+            address(this),
             instalmentSize
         );
         require(sent, "Payment failed");
@@ -104,14 +105,14 @@ contract Group is IERC20 {
         );
         bool sent = token.transferFrom(
             msg.sender,
-            this.address,
+            address(this),
             instalmentSize
         );
         require(sent, "Payment failed");
 
-        userMap[_user].remainingAmount = assetPrice - instalmentSize;
-        userMap[_user].remainingPayments = numberOfInstalments - 1;
-        possibleWinners.push(_user);
+        userMap[msg.sender].remainingAmount = assetPrice - instalmentSize;
+        userMap[msg.sender].remainingPayments = numberOfInstalments - 1;
+        possibleWinners.push(msg.sender);
 
         emit PaymentMade(msg.sender, assetPrice);
     }
@@ -122,7 +123,7 @@ contract Group is IERC20 {
             "Group is not full yet, cannot start lottery"
         );
 
-        uint256 contractBalance = token.balanceOf(this.address);
+        uint256 contractBalance = token.balanceOf(address(this));
         // how many assets can be bought with the contract balance
         uint256 assetsToBuy = contractBalance / assetPrice;
 
@@ -150,8 +151,7 @@ contract Group is IERC20 {
             for (uint ii = winnerIndex; ii < possibleWinners.length - 1; ii++) {
                 possibleWinners[ii] = possibleWinners[ii + 1];
             }
-            delete possibleWinners[possibleWinners.length - 1];
-            possibleWinners.length--;
+            possibleWinners.pop();
         }
         bool sent = token.transfer(admin, assetPrice * assetsToBuy);
         require(sent, "Payment to admin failed");
@@ -159,10 +159,5 @@ contract Group is IERC20 {
         // mint the assets and rent to winners
 
         possibleWinners = new address[](0);
-    }
-
-    // Helper functions to interact with the contract's state
-    function getUserCount() public view returns (uint256) {
-        return userStructs.length;
     }
 }
