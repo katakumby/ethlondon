@@ -92,26 +92,46 @@ contract Group {
         _;
     }
 
-    function joinGroup(address _user) public {
+    function joinGroup(
+        address signal,
+        uint256 root,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) public {
         require(currentUsers < numberOfUsers, "User capacity reached");
 
         // verify worldcoin id
+        // First, we make sure this person hasn't done this before
+        if (nullifierHashes[nullifierHash]) revert InvalidNullifier();
+
+        // We now verify the provided proof is valid and the user is verified by World ID
+        worldId.verifyProof(
+            root,
+            groupId,
+            abi.encodePacked(signal).hashToField(),
+            nullifierHash,
+            externalNullifier,
+            proof
+        );
+
+        // We now record the user has done this, so they can't do it again (proof of uniqueness)
+        nullifierHashes[nullifierHash] = true;
         // address _user = msg.sender;
         //take payment
         // require(userMap[_user].exists, "User already in the group");
-        bool sent = token.transferFrom(_user, address(this), instalmentSize);
+        bool sent = token.transferFrom(signal, address(this), instalmentSize);
         require(sent, "Payment failed");
 
         currentUsers++; // just to check when to start the group
 
-        possibleWinners.push(_user);
-        userMap[_user].remainingAmount = assetPrice - instalmentSize;
-        userMap[_user].remainingPayments = numberOfInstalments - 1;
+        possibleWinners.push(signal);
+        userMap[signal].remainingAmount = assetPrice - instalmentSize;
+        userMap[signal].remainingPayments = numberOfInstalments - 1;
 
-        console.log("Adding user:", _user); // Debugging line
+        console.log("Adding user:", signal); // Debugging line
 
-        // console.log("users[msg.sender]: ", users[_user]);
-        emit UserAdded(_user);
+        // console.log("users[msg.sender]: ", users[signal]);
+        emit UserAdded(signal);
     }
 
     // function removeUser(uint256 user_index) public onlyAdmin {

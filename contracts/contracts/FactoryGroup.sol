@@ -32,8 +32,19 @@ contract FactoryGroup {
         organiserGroups[msg.sender].push(GroupArray.length - 1);
     }
 
-    function joinGroup(uint256 _groupIndex) public {
-        Group(address(GroupArray[_groupIndex])).joinGroup(msg.sender);
+    function joinGroup(
+        uint256 _groupIndex,
+        address signal,
+        uint256 root,
+        uint256 nullifierHash,
+        uint256[8] calldata proof
+    ) public {
+        Group(address(GroupArray[_groupIndex])).joinGroup(
+            signal,
+            root,
+            nullifierHash,
+            proof
+        );
         userGroups[msg.sender].push(_groupIndex);
     }
 
