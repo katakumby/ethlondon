@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./Group.sol";
 
-contract Factory {
+contract FactoryGroup {
     Group[] public GroupArray;
     mapping(address => uint256[]) public organiserGroups;
     mapping(address => uint256[]) public userGroups;
@@ -25,7 +25,7 @@ contract Factory {
     }
 
     function joinGroup(uint256 _groupIndex) public {
-        Group(address(GroupArray[_groupIndex])).joinGroup();
+        Group(address(GroupArray[_groupIndex])).joinGroup(msg.sender);
         userGroups[msg.sender].push(_groupIndex);
     }
 
@@ -40,10 +40,4 @@ contract Factory {
     // function startProgressForGroup(uint256 _groupIndex) public {
     //     Grouper(address(GroupArray[_groupIndex])).startProgress();
     // }
-
-    function getGroupAddress(
-        uint256 _groupIndex
-    ) public view returns (address) {
-        return address(GroupArray[_groupIndex]);
-    }
 }

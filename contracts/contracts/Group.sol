@@ -32,6 +32,7 @@ contract Group {
     event UserAdded(address indexed user);
     event UserRemoved(address indexed user);
     event PaymentMade(address indexed user, uint256 amount);
+    event LotteryWinners(address[] winners);
 
     constructor(
         address _token,
@@ -59,18 +60,14 @@ contract Group {
         _;
     }
 
-    function joinGroup() public {
+    function joinGroup(address _user) public {
         require(currentUsers < numberOfUsers, "User capacity reached");
 
         // verify worldcoin id
-        address _user = msg.sender;
+        // address _user = msg.sender;
         //take payment
-        require(userMap[_user].exists, "User already in the group");
-        bool sent = token.transferFrom(
-            msg.sender,
-            address(this),
-            instalmentSize
-        );
+        // require(userMap[_user].exists, "User already in the group");
+        bool sent = token.transferFrom(_user, address(this), instalmentSize);
         require(sent, "Payment failed");
 
         currentUsers++; // just to check when to start the group
@@ -122,6 +119,7 @@ contract Group {
             currentUsers == numberOfUsers,
             "Group is not full yet, cannot start lottery"
         );
+        console.log("Starting lottery");
 
         uint256 contractBalance = token.balanceOf(address(this));
         // how many assets can be bought with the contract balance
@@ -134,6 +132,7 @@ contract Group {
         //initialize empty array of capacity total supply
         address[] memory winningAddr = new address[](assetsToBuy);
 
+        console.log("before for loop: ", possibleWinners.length);
         for (uint256 i = 0; i < assetsToBuy; i++) {
             uint256 winnerIndex = uint256(
                 keccak256(
@@ -153,11 +152,15 @@ contract Group {
             }
             possibleWinners.pop();
         }
+        console.log("before trasnger");
         bool sent = token.transfer(admin, assetPrice * assetsToBuy);
         require(sent, "Payment to admin failed");
 
         // mint the assets and rent to winners
 
         possibleWinners = new address[](0);
+        emit LotteryWinners(winningAddr);
+
+        console.log("Lottery winners: ", winningAddr[0]);
     }
 }
