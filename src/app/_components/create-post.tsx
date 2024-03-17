@@ -36,7 +36,7 @@ export function CreatePost() {
         className="rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20"
         disabled={createPost.isPending}
       >
-        {createPost.isPending ? "Submitting..." : "Submit"}
+        {createPost.isPending ? "Submitting..." : "Join group"}
       </button>
     </form>
   );

@@ -5,6 +5,8 @@ import {
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import hre from "hardhat";
+import {EventLog} from "ethers/src.ts/contract/wrappers";
+import {Log} from "ethers/src.ts/providers/provider";
 
 describe("Lock2", function () {
     // We define a fixture to reuse the same setup in every test.
@@ -14,10 +16,11 @@ describe("Lock2", function () {
 
 
         // Contracts are deployed using the first signer/account by default
-        const [owner, otherAccount1, otherAccount2] = await hre.ethers.getSigners();
+        const [owner, otherAccount1, otherAccount2 ] = await hre.ethers.getSigners();
 
         const ERC4907 = await hre.ethers.getContractFactory("ERC4907");
         const erc4907 = await ERC4907.deploy("BMW Lottery","BMWL", owner);
+
 
         return { erc4907, owner, otherAccount1,otherAccount2};
     }
@@ -25,9 +28,10 @@ describe("Lock2", function () {
     describe("Deployment", function () {
         it("Should mint new NFT's ", async function () {
             const { erc4907, owner,otherAccount1,otherAccount2 } = await loadFixture(deployOneYearLockFixture);
-            const nft1 = await erc4907.mint(otherAccount1,"ipfs1",new Date().valueOf()+1000);
-            const nft2 = await erc4907.mint(otherAccount2,"ipfs2",new Date().valueOf()+1000);
-            const nft3 = await erc4907.mint(owner,"ipfs3",new Date().valueOf()+1000);
+            const endTime = await time.latest();
+            const nft1 = await erc4907.mint(otherAccount1,"ipfs1",endTime+1000);
+            const nft2 = await erc4907.mint(otherAccount2,"ipfs2",endTime+1000);
+            const nft3 = await erc4907.mint(owner,"ipfs3",endTime+1000);
 
             expect(await erc4907.userOf(0)).to.equal(otherAccount1.address.toString())
             expect(await erc4907.userOf(1)).to.equal(otherAccount2.address.toString())
@@ -37,6 +41,27 @@ describe("Lock2", function () {
             expect(await erc4907.ownerOf(1)).to.equal(owner.address.toString())
             expect(await erc4907.ownerOf(2)).to.equal(owner.address.toString())
 
+
+        });
+        it("Should default after expiration to owner", async function () {
+            const { erc4907, owner,otherAccount1,otherAccount2 } = await loadFixture(deployOneYearLockFixture);
+            const endTime = await time.latest();
+
+            const nft1 = await erc4907.mint(otherAccount1,"ipfs1",endTime+1000);
+            const nft2 = await erc4907.mint(otherAccount2,"ipfs2",endTime+1000);
+            const nft3 = await erc4907.mint(owner,"ipfs3",endTime+1000);
+            await time.increaseTo(endTime+10_000);
+
+            expect(await erc4907.userOf(0)).to.equal('0x0000000000000000000000000000000000000000')
+            expect(await erc4907.userOf(1)).to.equal('0x0000000000000000000000000000000000000000')
+            expect(await erc4907.userOf(2)).to.equal('0x0000000000000000000000000000000000000000')
+
+            expect(await erc4907.ownerOf(0)).to.equal(owner.address.toString())
+            expect(await erc4907.ownerOf(1)).to.equal(owner.address.toString())
+            expect(await erc4907.ownerOf(2)).to.equal(owner.address.toString())
+
+            const result = await nft3.wait()
+            
 
         });
 
