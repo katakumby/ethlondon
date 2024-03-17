@@ -11,6 +11,16 @@ import { Log } from "ethers/src.ts/providers/provider";
 import { BigNumberish } from "ethers";
 // import { solidity } from "ethereum-waffle";
 // use(solidity);
+const DEMO_PROOF = {
+  verification_level: "orb",
+  proof:
+    "0x1e8b4eafbbd4ec0fe6d5ece904ee67084d24ce194ce511ee80cf9c312fcc5301252d35d4d3b16a2a7430b7f8f33ae6cc09ce679fd1c9d620b86431ea2404d6f92633408674916d1b3072513e52bde4beae413f0351c25eefb26f38b515db437722c4c5476880216be0b8c9affce7fd07c25f66c203e3fd5681153f14e46e90f012d2135cb08c745dc46976a8f3ab6ba38aeaf2155eaedb2f960af5502dd40a76052866807c26d0139e52b2c55070a9e8a4f6cc71d0ac69494589684910b9baca0e4a726f874faaf396ff2a90b7f0af74f6a3e1afe17885981b1e1e1c3dceca9a089e4ce17998276da7a8a1afa66bfcbb5a6b58c6d8eb559e7d8ebd6331735f57",
+  merkle_root:
+    "0x1e28120c18d4a1025fbcbc2401462cfce8406fc87b7c8a0468c474649687df70",
+  nullifier_hash:
+    "0x0e0b399da23436c89f585545fda23fa682c291fed6cf730df6f396c273316b45",
+  credential_type: "orb",
+};
 
 describe("Groups", function () {
   // chai.use(solidity);
@@ -38,7 +48,7 @@ describe("Groups", function () {
     return { factory, token, owner, otherAccount, signers, erc4907 };
   }
 
-  describe("aa", function () {
+  describe("Happy path", function () {
     it("Should mint new Factory ", async function () {
       const { factory, token, owner, otherAccount, signers, erc4907 } =
         await loadFixture(deployFactoryGroup);
@@ -67,7 +77,15 @@ describe("Groups", function () {
         .connect(otherAccount)
         .approve(await factory.GroupArray(0), 500000);
       console.debug("approve");
-      await factory.connect(otherAccount).joinGroup(0);
+      await factory
+        .connect(otherAccount)
+        .joinGroup(
+          0,
+          otherAccount.address,
+          DEMO_PROOF.merkle_root,
+          DEMO_PROOF.nullifier_hash,
+          [0, 0, 0, 0, 0, 0, 0, DEMO_PROOF.proof],
+        );
 
       for (let i = 0; i < 5; i++) {
         await token.transfer(signers[i], 500000);
@@ -75,7 +93,15 @@ describe("Groups", function () {
           .connect(signers[i])
           .approve(await factory.GroupArray(0), 500000);
         console.debug("approve");
-        await factory.connect(signers[i]).joinGroup(0);
+        await factory
+          .connect(signers[i])
+          .joinGroup(
+            0,
+            otherAccount.address,
+            DEMO_PROOF.merkle_root,
+            DEMO_PROOF.nullifier_hash,
+            [0, 0, 0, 0, 0, 0, 0, DEMO_PROOF.proof],
+          );
       }
       const tx = await factory.startLotteryForGroup(0);
       const result = await tx.wait();
