@@ -14,8 +14,8 @@ contract FactoryGroup {
         uint256 _assetPrice,
         uint256 _numberOfUsers,
         uint256 _numberOfInstalments // IWorldID _worldId,
-        // string memory _appId,
-    ) public // string memory _actionId
+        // string memory _actionId
+    ) public // string memory _appId,
     {
         Group group = new Group(
             _token,
