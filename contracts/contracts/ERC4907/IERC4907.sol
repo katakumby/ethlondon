@@ -1,13 +1,22 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
-interface IERC4907 {
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
+interface IERC4907 {
     // Logged when the user of an NFT is changed or expires is changed
     /// @notice Emitted when the `user` of an NFT or the `expires` of the `user` is changed
     /// The zero address for user indicates that there is no user address
-    event UpdateUser(uint256 indexed tokenId, address indexed user, uint64 expires);
-
+    event UpdateUser(
+        uint256 indexed tokenId,
+        address indexed user,
+        uint64 expires
+    );
+    function mint(
+        address member,
+        string memory tokenURI,
+        uint64 expires
+    ) external returns (uint256);
     /// @notice set the user and expires of an NFT
     /// @dev The zero address indicates there is no user
     /// Throws if `tokenId` is not valid NFT
@@ -19,11 +28,11 @@ interface IERC4907 {
     /// @dev The zero address indicates that there is no user or the user is expired
     /// @param tokenId The NFT to get the user address for
     /// @return The user address for this NFT
-    function userOf(uint256 tokenId) external view returns(address);
+    function userOf(uint256 tokenId) external view returns (address);
 
     /// @notice Get the user expires of an NFT
     /// @dev The zero value indicates that there is no user
     /// @param tokenId The NFT to get the user expires for
     /// @return The user expires for this NFT
-    function userExpires(uint256 tokenId) external view returns(uint256);
+    function userExpires(uint256 tokenId) external view returns (uint256);
 }

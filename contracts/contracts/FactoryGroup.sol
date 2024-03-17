@@ -10,12 +10,15 @@ contract FactoryGroup {
 
     function createNewGroup(
         address _token,
+        address _asset,
         uint256 _assetPrice,
         uint256 _numberOfUsers,
         uint256 _numberOfInstalments
     ) public {
         Group group = new Group(
             _token,
+            _asset,
+            // address(this),
             _assetPrice,
             _numberOfUsers,
             _numberOfInstalments

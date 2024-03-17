@@ -29,16 +29,18 @@ describe("Groups", function () {
     console.log("before deploy token");
     const token = await Token.deploy(10000000000);
 
+    const ERC4907 = await hre.ethers.getContractFactory("ERC4907");
+    const erc4907 = await ERC4907.deploy("BMW Lottery", "BMWL", owner);
     // await factory.deployed();
 
     // console.log("factory deployed to:", factory.address);
 
-    return { factory, token, owner, otherAccount, signers };
+    return { factory, token, owner, otherAccount, signers, erc4907 };
   }
 
   describe("aa", function () {
     it("Should mint new Factory ", async function () {
-      const { factory, token, owner, otherAccount, signers } =
+      const { factory, token, owner, otherAccount, signers, erc4907 } =
         await loadFixture(deployFactoryGroup);
 
       // Transfer 50 tokens from owner to addr1
@@ -52,8 +54,15 @@ describe("Groups", function () {
       // );
       console.debug(await factory.getAddress());
       console.debug("baby");
-      await factory.createNewGroup(token.getAddress(), 1500, 6, 3);
+      await factory.createNewGroup(
+        token.getAddress(),
+        erc4907.getAddress(),
+        1500,
+        6,
+        3,
+      );
       console.debug("addr of new group", await factory.GroupArray(0));
+      await erc4907.transferOwnership(await factory.GroupArray(0));
       await token
         .connect(otherAccount)
         .approve(await factory.GroupArray(0), 500000);
@@ -70,23 +79,25 @@ describe("Groups", function () {
       }
       const tx = await factory.startLotteryForGroup(0);
       const result = await tx.wait();
-      // console.log(result?.logs);
-      function findEventArgs(logs: Array<EventLog | Log>, eventName: string) {
-        let _event = null;
 
-        for (const event of logs) {
-          if ("fragment" in event)
-            if (event.fragment && event.fragment.name === eventName) {
-              _event = event.args;
-            }
-        }
-        return _event;
-      }
-      const logs = result?.logs;
-      if (logs) {
-        // @ts-ignore
-        console.log(findEventArgs(logs, "LottertWinners"));
-      }
+      console.log(await erc4907.userOf(0));
+      // console.log(result?.logs);
+      // function findEventArgs(logs: Array<EventLog | Log>, eventName: string) {
+      //   let _event = null;
+
+      //   for (const event of logs) {
+      //     if ("fragment" in event)
+      //       if (event.fragment && event.fragment.name === eventName) {
+      //         _event = event.args;
+      //       }
+      //   }
+      //   return _event;
+      // }
+      // const logs = result?.logs;
+      // if (logs) {
+      //   // @ts-ignore
+      //   console.log(findEventArgs(logs, "LottertWinners"));
+      // }
     });
   });
 });

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import "hardhat/console.sol";
+import "./ERC4907/IERC4907.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Group {
@@ -12,6 +13,7 @@ contract Group {
 
     address public admin;
     IERC20 public token;
+    IERC4907 public asset;
     uint256 public assetPrice;
     uint256 public numberOfInstalments;
     uint256 public instalmentSize;
@@ -36,12 +38,14 @@ contract Group {
 
     constructor(
         address _token,
+        address _asset,
         uint256 _assetPrice,
         uint256 _numberOfUsers,
         uint256 _numberOfInstalments
     ) {
         admin = msg.sender;
         token = IERC20(_token);
+        asset = IERC4907(_asset);
         assetPrice = _assetPrice;
         numberOfUsers = _numberOfUsers;
         numberOfInstalments = _numberOfInstalments;
@@ -157,6 +161,14 @@ contract Group {
         require(sent, "Payment to admin failed");
 
         // mint the assets and rent to winners
+        for (uint256 i = 0; i < assetsToBuy; i++) {
+            uint256 tokenID = asset.mint(
+                address(this),
+                "https://www.google.com",
+                0
+            );
+            asset.setUser(tokenID, winningAddr[i], 1742192348);
+        }
 
         possibleWinners = new address[](0);
         emit LotteryWinners(winningAddr);
