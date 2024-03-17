@@ -13,8 +13,10 @@ contract FactoryGroup {
         address _asset,
         uint256 _assetPrice,
         uint256 _numberOfUsers,
-        uint256 _numberOfInstalments
-    ) public {
+        uint256 _numberOfInstalments // IWorldID _worldId,
+        // string memory _appId,
+    ) public // string memory _actionId
+    {
         Group group = new Group(
             _token,
             _asset,
@@ -22,6 +24,9 @@ contract FactoryGroup {
             _assetPrice,
             _numberOfUsers,
             _numberOfInstalments
+            // _worldId,
+            // _appId,
+            // _actionId
         );
         GroupArray.push(group);
         organiserGroups[msg.sender].push(GroupArray.length - 1);

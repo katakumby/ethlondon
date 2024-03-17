@@ -3,8 +3,10 @@ pragma solidity ^0.8.0;
 import "hardhat/console.sol";
 import "./ERC4907/IERC4907.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
+import {ByteHasher} from "./helpers/ByteHasher.sol";
+import {IWorldID} from "./interfaces/IWorldID.sol";
 contract Group {
+    using ByteHasher for bytes;
     struct User {
         bool exists;
         uint256 remainingAmount;
@@ -29,6 +31,21 @@ contract Group {
 
     // Payments for a given user
     // mapping(address => mapping(uint16 => bool)) public user_payments;
+
+    /// @notice Thrown when attempting to reuse a nullifier
+    error InvalidNullifier();
+
+    /// @dev The World ID instance that will be used for verifying proofs
+    IWorldID internal immutable worldId;
+
+    /// @dev The contract's external nullifier hash
+    uint256 internal immutable externalNullifier;
+
+    /// @dev The World ID group ID (always 1)
+    uint256 internal immutable groupId = 1;
+
+    /// @dev Whether a nullifier hash has been used already. Used to guarantee an action is only performed once by a single person
+    mapping(uint256 => bool) internal nullifierHashes;
 
     // Event declarations
     event UserAdded(address indexed user);
@@ -57,6 +74,17 @@ contract Group {
         );
 
         console.log("Setting erc 20 contract: ", _token);
+        worldId = IWorldID(0x42FF98C4E85212a5D31358ACbFe76a621b50fC02);
+        externalNullifier = abi
+            .encodePacked(
+                abi
+                    .encodePacked(
+                        "app_staging_5b179dc5f0ba2b412b0af12ca60ce74c"
+                    )
+                    .hashToField(),
+                address(this)
+            )
+            .hashToField();
     }
 
     modifier onlyAdmin() {
@@ -162,11 +190,7 @@ contract Group {
 
         // mint the assets and rent to winners
         for (uint256 i = 0; i < assetsToBuy; i++) {
-            uint256 tokenID = asset.mint(
-                address(this),
-                "https://www.google.com",
-                0
-            );
+            uint256 tokenID = asset.mint(address(this), "Asset", 0);
             asset.setUser(tokenID, winningAddr[i], 1742192348);
         }
 
